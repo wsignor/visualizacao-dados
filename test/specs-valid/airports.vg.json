@@ -7,15 +7,15 @@
 
   "signals": [
     {
-      "name": "scale", "value": 1200,
+      "name": "scale", "value": 680,
       "bind": {"input": "range", "min": 500, "max": 3000}
     },
     {
-      "name": "translateX", "value": 450,
+      "name": "translateX", "value": 1040,
       "bind": {"input": "range", "min": -500, "max": 1200}
     },
     {
-      "name": "translateY", "value": 260,
+      "name": "translateY", "value": 80,
       "bind": {"input": "range", "min": -300, "max": 700}
     },
     {
@@ -23,8 +23,7 @@
       "bind": {"input": "radio", "options": ["line", "curve"]}
     },
     {
-      "name": "hover",
-      "value": null,
+      "name": "hover", "value": null,
       "on": [
         {"events": "@cell:mouseover", "update": "datum"},
         {"events": "@cell:mouseout", "update": "null"}
@@ -32,8 +31,8 @@
     },
     {
       "name": "title",
-      "value": "U.S. Airports, 2008",
-      "update": "hover ? hover.name + ' (' + hover.iata + ')' : 'U.S. Airports, 2008'"
+      "value": "Viagens parlamentares 2017",
+      "update": "hover ? hover.name + ' (' + hover.iata + ')' : 'Viagens parlamentares 2017'"
     },
     {
       "name": "cell_stroke",
@@ -47,9 +46,9 @@
 
   "data": [
     {
-      "name": "states",
-      "url": "data/us-10m.json",
-      "format": {"type": "topojson", "feature": "states"},
+      "name": "estados",
+      "url": "data/br-states.json",
+      "format": {"type": "topojson", "feature": "estados"},
       "transform": [
         {
           "type": "geopath",
@@ -59,7 +58,7 @@
     },
     {
       "name": "traffic",
-      "url": "data/flights-airport.csv",
+      "url": "data/Ano-2017-parsed.csv",
       "format": {"type": "csv", "parse": "auto"},
       "transform": [
         {
@@ -71,8 +70,8 @@
     },
     {
       "name": "airports",
-      "url": "data/airports.csv",
-      "format": {"type": "csv","parse": "auto"
+      "url": "data/world-airports.json",
+      "format": {"type": "json","parse": "auto"
       },
       "transform": [
         {
@@ -87,7 +86,7 @@
         {
           "type": "geopoint",
           "projection": "projection",
-          "fields": ["longitude", "latitude"]
+          "fields": ["lon", "lat"]
         },
         {
           "type": "filter",
@@ -106,7 +105,7 @@
     },
     {
       "name": "routes",
-      "url": "data/flights-airport.csv",
+      "url": "data/Ano-2017-parsed.csv",
       "format": {"type": "csv", "parse": "auto"},
       "transform": [
         {
@@ -133,7 +132,7 @@
   "projections": [
     {
       "name": "projection",
-      "type": "albersUsa",
+      "type": "mercator",
       "scale": {"signal": "scale"},
       "translate": [{"signal": "translateX"}, {"signal": "translateY"}]
     }
@@ -151,7 +150,7 @@
   "marks": [
     {
       "type": "path",
-      "from": {"data": "states"},
+      "from": {"data": "estados"},
       "encode": {
         "enter": {
           "fill": {"value": "#dedede"},

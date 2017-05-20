@@ -1,0 +1,6 @@
+[ {"country": "eth", "city": "adis", "time": "2012-12-04T04:00:00", "count": 5},
+  {"country": "deu", "city": "munich", "time": "2012-12-04T19:00:00", "count":21},
+  {"country": "chn", "city": "wuhan", "time": "2012-12-04T18:00:00", "count": 1},
+  {"country": "usa", "city": "winthrop", "time": "2012-12-04T18:00:00", "count": 1},
+  {"country": "usa", "city": "spokane", "time": "2012-12-04T01:00:00", "count": 4},
+  {"country": "gbr", "city": "caterham", "time": "2012-12-04T13:00:00", "count": 1} ]

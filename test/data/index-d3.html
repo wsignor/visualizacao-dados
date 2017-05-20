@@ -26,10 +26,45 @@
         pointer-events: all;
     }
 
+    html, body, #map {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .stations, .stations svg {
+        position: absolute;
+    }
+
+    .stations svg {
+        width: 60px;
+        height: 20px;
+        padding-right: 100px;
+        font: 10px sans-serif;
+    }
+
+    .stations circle {
+        fill: brown;
+        stroke: black;
+        stroke-width: 1.5px;
+    }
+
 </style>
 <svg width="960" height="600"></svg>
+
+<div width="960" height="600" id="map"></div>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/topojson.v1.min.js"></script>
+<!--<script src="//maps.google.com/maps/api/js?sensor=true"></script>-->
+
+<!--<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHvjraZ_YQXZvFg8etDFaKUxp3EG1-DOs&callback=initMap"
+        type="text/javascript"></script>-->
+
+
+
+<!--<script async defer src="https://maps.googleapis.com/maps/api/js?key=my_key&callback=initMap"
+        type="text/javascript"></script>-->
 <script>
 
     var svg = d3.select("svg"),

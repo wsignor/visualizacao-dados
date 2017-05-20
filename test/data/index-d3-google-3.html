@@ -1,0 +1,76 @@
+<head>
+    <title>App</title>
+    <style type="text/css">
+        html { height: 100% }
+        body { height: 100%; margin: 0; padding: 0 }
+        #map-canvas { height: 100%; }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3&amp;libraries=places&amp;key=AIzaSyC62R0j23s1c-JzP6Gd3Q7UC5mDykuG-gc&amp;callback=initMap"></script>
+    <script src="http://d3js.org/d3.v3.js" charset="utf-8"></script>
+    <script src="polyline_context.js"></script>
+    <script type="text/javascript">
+        var map;
+        var polyline;
+        function initialize() {
+            var mapOptions = {
+                center: new google.maps.LatLng(53.567, 9.944),
+                zoom: 2,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+            map = new google.maps.Map(document.getElementById("map-canvas"),
+                mapOptions);
+            polyline = new google.maps.Polyline({
+                map: map
+            });
+
+            d3init();
+        }
+        var context;
+        var width;
+        var height;
+        var path;
+        var graticule;
+        var equator;
+        var projection;
+
+        function d3init() {
+            width = map.getDiv().offsetWidth;
+            height = map.getDiv().offsetHeight;
+
+            projection = d3.geo.equirectangular()
+                .translate([0, 0])
+                .scale(52.29578)
+                .precision(2)
+
+            context = new PolylineContext();
+            path = d3.geo.path().projection(projection).context(context);
+            /*equator = {type: 'LineString', coordinates: [[-180, 20], [-90, 0], [0, -20], [90, 0], [180, 20]]};*/
+            equator = {type: 'LineString', coordinates: [[-75.75379944, 38.75709915],[-80.211111, 41.2995]]};
+
+            //context.currentPath = polyline.getPath();
+
+            //polyline.setCurrent(equator);
+            render();
+        }
+
+        function render() {
+            polyline.setOptions({
+                strokeColor: 'red',
+                strokeWeight: 2
+            });
+            context.setCurrent(polyline.getPath());
+            //context.currentPath = polyline.getPath();
+            path(equator);
+        }
+
+        google.maps.event.addDomListener(window, 'load', initialize);
+
+
+    </script>
+</head>
+
+<body>
+
+<div id="map-canvas">
+</div>
+</body>

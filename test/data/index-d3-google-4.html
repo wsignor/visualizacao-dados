@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
-    <script src="https://maps.googleapis.com/maps/api/js?v=3&amp;libraries=places&amp;key=AIzaSyC62R0j23s1c-JzP6Gd3Q7UC5mDykuG-gc&amp;callback=initMap"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHvjraZ_YQXZvFg8etDFaKUxp3EG1-DOs" type="text/javascript"></script>
     <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js?1.29.1"></script>
     <style type="text/css">
 
@@ -42,6 +42,7 @@ var map = new google.maps.Map(d3.select("#map").node(), {
   center: new google.maps.LatLng(37.76487, -122.41948),
   mapTypeId: google.maps.MapTypeId.TERRAIN
 });
+
 //geocoding
 var geocoder = new google.maps.Geocoder();
 var d3pos = { };
@@ -86,10 +87,11 @@ d3.json("countryCityTimeAlt.json", function(data) {
 	  geocoder.geocode( { 'address': d.city}, function(results, status) {
          		if (status == google.maps.GeocoderStatus.OK) {
            			var point = {
-                	position: results[0].geometry.location
+                	 position: results[0].geometry.viewport.f
             		};
 
-                	console.log(point);
+                    console.log('results[0].geometry lat' + results[0].geometry.viewport.f.f);
+                    console.log('results[0].geometry long' + results[0].geometry.location.lng);
             		d3pos = { 	lat: point.position.Ya,
             					lon : point.position.Za
             				};
@@ -102,6 +104,7 @@ d3.json("countryCityTimeAlt.json", function(data) {
           		}
         	});
         }
+        console.log('d3pos' + d3pos);
         console.log(d3pos.lat, d3pos.lon);
 
       function transform(d) {
@@ -122,3 +125,4 @@ d3.json("countryCityTimeAlt.json", function(data) {
     </script>
   </body>
 </html>
+

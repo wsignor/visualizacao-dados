@@ -122,6 +122,22 @@
             .attr("class", "airport-dots")
             .attr("d", path);
 
+        //TODO increase bubble size
+        svg.append("g")
+            .attr("class", "bubble")
+            .selectAll("circle")
+            .data(topojson.feature(us, airports.objects.iata).features.sort(function(a, b) {
+                return 3 - 1;
+            }))
+            .enter().append("circle")
+            .attr("transform", function(d) { return "translate(" + path.centroid(d) + ")"; })
+            .attr("r", function(d) { return radius(d.properties.population); })
+            .append("title")
+            .text(function(d) {
+                return d.properties.name
+                    + "\nPopulation " + formatNumber(d.properties.population);
+            });
+
         var airport = svg.selectAll(".airport")
             .data(airports)
             .enter().append("g")

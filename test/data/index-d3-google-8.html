@@ -12,6 +12,7 @@
             font-family: 'Roboto', 'sans-serif';
             line-height: 30px;
             padding-left: 10px;
+            padding-right: 20px;
         }
 
         #right-panel select, #right-panel input {
@@ -91,6 +92,29 @@
 <div id="map"></div>
 <div id="right-panel">
     <p>Total Distance: <span id="total"></span></p>
+
+    <select id="parlamentares-select">
+    </select>
+
+
+    <!--<select id="year" name="year">
+        <script>
+            var myDate = new Date();
+            var year = myDate.getFullYear();
+            for(var i = 1900; i < year+1; i++){
+                document.write('<option value="'+i+'">'+i+'</option>');
+            }
+        </script>
+    </select>-->
+
+    <input type="range" min="2014" max="2017" value="2014" step="1" onchange="showValue(this.value)" />
+    <span id="range">2014</span>
+    <script type="text/javascript">
+        function showValue(newValue)
+        {
+            document.getElementById("range").innerHTML=newValue;
+        }
+    </script>
 </div>
 <script>
     function initMap() {
@@ -113,6 +137,7 @@
 
         displayRoute('Perth, WA', 'Sydney, NSW', directionsService,
             directionsDisplay);
+
 
         var flightPlanCoordinates = [
             new google.maps.LatLng(37.772323, -122.214897),
@@ -180,32 +205,38 @@
             if (error) throw error;
 
             var airportByIata = d3.map(airports, function (d) {
-                //console.log('d: ' , d);
-                //console.log('d.iata: ' , d.iata_code);
-
                 return d.iata_code;
             });
 
-            //console.log('airportByIata: ' , airportByIata);
+            var parlamentares = [];
 
+            // check which airports really have flights from our dataset
             flights.forEach(function (flight) {
                 var source = airportByIata.get(flight.origin),
                     target = airportByIata.get(flight.destination);
-                //console.log('flight: ' , flight);
-                //console.log('source: ' , source);
-                //console.log('target: ' , target);
                 if(source != null && target != null){
                     source.arcs.coordinates.push([source, target]);
                     target.arcs.coordinates.push([target, source]);
                 }
 
-                //console.log('source: ', source);
+                parlamentares[parlamentares.length] = flight.name;
             });
 
             airports = airports
                 .filter(function (d) {
                     return d.arcs.coordinates.length;
                 });
+
+            // adding parlamentares names to list
+            // TODO ensure names are not repeated
+            console.log('parlamentares: ' , parlamentares);
+            var select = document.getElementById("parlamentares-select");
+            for(index in parlamentares) {
+                select.options[select.options.length] = new Option(parlamentares[index], index);
+            }
+
+
+
 
             // trying to add airport points
             var overlay = new google.maps.OverlayView();

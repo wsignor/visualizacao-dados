@@ -80,7 +80,7 @@
         }
 
         .airports circle {
-            fill: brown;
+            fill: #009aff;
             stroke: black;
             stroke-width: 1.5px;
         }
@@ -93,31 +93,22 @@
 <div id="right-panel">
     <p>Total Distance: <span id="total"></span></p>
 
-    <select id="parlamentares-select">
+    <select id="parlamentares-select" onchange="initMap(this.value)">
     </select>
 
-
-    <!--<select id="year" name="year">
-        <script>
-            var myDate = new Date();
-            var year = myDate.getFullYear();
-            for(var i = 1900; i < year+1; i++){
-                document.write('<option value="'+i+'">'+i+'</option>');
-            }
-        </script>
-    </select>-->
-
-    <input type="range" min="2014" max="2017" value="2014" step="1" onchange="showValue(this.value)" />
+    <input type="range" min="2014" max="2017" value="2014" step="1" onchange="showValue(this)"/>
     <span id="range">2014</span>
     <script type="text/javascript">
-        function showValue(newValue)
-        {
-            document.getElementById("range").innerHTML=newValue;
+        function showValue(newValue) {
+            document.getElementById("range").innerHTML = newValue;
         }
     </script>
 </div>
 <script>
-    function initMap() {
+
+    var parlamentares = [];
+    function initMap(indexParlamentarSelected) {
+
         var map = new google.maps.Map(document.getElementById('map'), {
             zoom: 1,
             draggableCursor: 'url(http://powerhut.co.uk/googlemaps/marker-images/image.png), crosshair',
@@ -127,7 +118,7 @@
         var directionsService = new google.maps.DirectionsService;
         var directionsDisplay = new google.maps.DirectionsRenderer({
             draggable: true,
-            map: map,
+            map: map
             //panel: document.getElementById('right-panel')
         });
 
@@ -208,19 +199,33 @@
                 return d.iata_code;
             });
 
-            var parlamentares = [];
+            if(parlamentares == null){
+
+                parlamentares = [];
+            }
 
             // check which airports really have flights from our dataset
-            flights.forEach(function (flight) {
-                var source = airportByIata.get(flight.origin),
-                    target = airportByIata.get(flight.destination);
-                if(source != null && target != null){
-                    source.arcs.coordinates.push([source, target]);
-                    target.arcs.coordinates.push([target, source]);
+            flights.forEach(function (flight, indexParlamentarSelected) {
+                if(indexParlamentarSelected != null && flight.name == parlamentares[indexParlamentarSelected]){
+                    console.log('flight.name == parlamentares[indexParlamentarSelected]: ' + flight.name == parlamentares[indexParlamentarSelected]);
+                    console.log('indexParlamentarSelected: ' , indexParlamentarSelected);
+                    console.log('flight.name: ' , flight.name);
+                    console.log('parlamentares[indexParlamentarSelected]: ' , parlamentares[indexParlamentarSelected]);
+
+                    var source = airportByIata.get(flight.origin),
+                        target = airportByIata.get(flight.destination);
+                    if (source != null && target != null) {
+                        source.arcs.coordinates.push([source, target]);
+                        target.arcs.coordinates.push([target, source]);
+                    }
+                }
+                if (!contains.call(parlamentares, flight.name)) {
+                    parlamentares[parlamentares.length] = flight.name;
                 }
 
-                parlamentares[parlamentares.length] = flight.name;
             });
+
+            //console.log(parlamentares[indexParlamentarSelected]);
 
             airports = airports
                 .filter(function (d) {
@@ -229,20 +234,17 @@
 
             // adding parlamentares names to list
             // TODO ensure names are not repeated
-            console.log('parlamentares: ' , parlamentares);
             var select = document.getElementById("parlamentares-select");
-            for(index in parlamentares) {
+            for (index in parlamentares) {
                 select.options[select.options.length] = new Option(parlamentares[index], index);
             }
-
-
 
 
             // trying to add airport points
             var overlay = new google.maps.OverlayView();
 
             // Add the container when the overlay is added to the map.
-                overlay.onAdd = function () {
+            overlay.onAdd = function () {
                 var layer = d3.select(this.getPanes().overlayLayer).append("div")
                     .attr("class", "airports");
 
@@ -278,8 +280,6 @@
                         });
 
                     function transform(d) {
-                        //console.log('d: ' , d);
-                        //console.log('d.value[1], d.value[0]: ' , d.value[1], d.value[0]);
                         d = new google.maps.LatLng(d.value[1], d.value[0]);
                         d = projection.fromLatLngToDivPixel(d);
                         return d3.select(this)
@@ -288,69 +288,12 @@
                     }
                 };
             };
-
-            //map.setOptions({draggableCursor:''});
 
             // Bind our overlay to the map…
             overlay.setMap(map);
             // end of airport points
         }
 
-        /*d3.json("stations.json", function (error, data) {
-            if (error) throw error;
-
-            var overlay = new google.maps.OverlayView();
-
-            // Add the container when the overlay is added to the map.
-            overlay.onAdd = function () {
-                var layer = d3.select(this.getPanes().overlayLayer).append("div")
-                    .attr("class", "stations");
-
-                // Draw each marker as a separate SVG element.
-                // We could use a single SVG, but what size would it have?
-                overlay.draw = function () {
-                    var projection = this.getProjection(),
-                        padding = 10;
-
-                    var marker = layer.selectAll("svg")
-                        .data(d3.entries(data))
-                        .each(transform) // update existing markers
-                        .enter().append("svg")
-                        .each(transform)
-                        .attr("class", "marker");
-
-                    // Add a circle.
-                    marker.append("circle")
-                        .attr("r", 4.5)
-                        .attr("cx", padding)
-                        .attr("cy", padding);
-
-                    // Add a label.
-                    marker.append("text")
-                        .attr("x", padding + 7)
-                        .attr("y", padding)
-                        .attr("dy", ".31em")
-                        .text(function (d) {
-                            return d.key;
-                        });
-
-                    function transform(d) {
-                        //console.log('d stations' , d);
-                        //console.log('d stations' , d.value[1], d.value[0]);
-                        d = new google.maps.LatLng(d.value[1], d.value[0]);
-                        d = projection.fromLatLngToDivPixel(d);
-                        return d3.select(this)
-                            .style("left", (d.x - padding) + "px")
-                            .style("top", (d.y - padding) + "px");
-                    }
-                };
-            };
-
-            //map.setOptions({draggableCursor:''});
-
-            // Bind our overlay to the map…
-            overlay.setMap(map);
-        });*/
 
         flightPath.setMap(map);
 
@@ -358,15 +301,31 @@
 
     }
 
-    /*d3.queue()
-     .defer(d3.json, "us-10m.json")
-     .defer(d3.csv, "airports.csv", typeAirport)
-     .defer(d3.csv, "flights-airport.csv", typeFlight)
-     .await(ready);
+    var contains = function (needle) {
+        // Per spec, the way to identify NaN is that it is not equal to itself
+        var findNaN = needle !== needle;
+        var indexOf;
 
-     function ready(error, us, airports, flights) {
-     if (error) throw error;
-     }*/
+        if (!findNaN && typeof Array.prototype.indexOf === 'function') {
+            indexOf = Array.prototype.indexOf;
+        } else {
+            indexOf = function (needle) {
+                var i = -1, index = -1;
+
+                for (i = 0; i < this.length; i++) {
+                    var item = this[i];
+
+                    if ((findNaN && item !== item) || item === needle) {
+                        index = i;
+                        break;
+                    }
+                }
+                return index;
+            };
+        }
+
+        return indexOf.call(this, needle) > -1;
+    };
 
     function placeMarker(latLng, map) {
         var marker = new google.maps.Marker({

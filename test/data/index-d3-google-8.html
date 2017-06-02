@@ -110,12 +110,12 @@
     function initMap(indexParlamentarSelected) {
 
         var map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 1,
+            zoom: 3,
             draggableCursor: 'url(http://powerhut.co.uk/googlemaps/marker-images/image.png), crosshair',
-            center: {lat: -24.345, lng: 134.46}  // Australia.
+            center: new google.maps.LatLng(-14.2350, -51.9253)//{lat: -14.2350, lng: 51.9253}  // Australia.
         });
 
-        var directionsService = new google.maps.DirectionsService;
+        /*var directionsService = new google.maps.DirectionsService;
         var directionsDisplay = new google.maps.DirectionsRenderer({
             draggable: true,
             map: map
@@ -184,7 +184,7 @@
         map.addListener('click', function (e) {
             placeMarker(e.latLng, map);
         });
-
+*/
         d3.queue()
             .defer(d3.json, "us-10m.json")
             .defer(d3.csv, "world-airport-codes.csv", typeAirport)
@@ -205,18 +205,31 @@
             }
 
             // check which airports really have flights from our dataset
-            flights.forEach(function (flight, indexParlamentarSelected) {
+            flights.forEach(function (flight) {
                 if(indexParlamentarSelected != null && flight.name == parlamentares[indexParlamentarSelected]){
-                    console.log('flight.name == parlamentares[indexParlamentarSelected]: ' + flight.name == parlamentares[indexParlamentarSelected]);
-                    console.log('indexParlamentarSelected: ' , indexParlamentarSelected);
-                    console.log('flight.name: ' , flight.name);
-                    console.log('parlamentares[indexParlamentarSelected]: ' , parlamentares[indexParlamentarSelected]);
-
                     var source = airportByIata.get(flight.origin),
                         target = airportByIata.get(flight.destination);
                     if (source != null && target != null) {
                         source.arcs.coordinates.push([source, target]);
                         target.arcs.coordinates.push([target, source]);
+
+
+                        console.log('orig: ' + flight.origin + ' - dest: ' + flight.destination);
+                        console.log('source: ' , source[0] + ' - target: ' , target);
+                        // try with source and target
+                        var flightPlanCoordinates3 = [
+                            new google.maps.LatLng(source.latitude_deg, source.longitude_deg),
+                            new google.maps.LatLng(target.latitude_deg, target.longitude_deg)
+                        ];
+                        var flightPath3 = new google.maps.Polyline({
+                            path: flightPlanCoordinates3,
+                            strokeColor: "#008eff",
+                            strokeOpacity: 1.0,
+                            strokeWeight: 2
+                        });
+
+                        flightPath3.setMap(map);
+
                     }
                 }
                 if (!contains.call(parlamentares, flight.name)) {
@@ -295,9 +308,9 @@
         }
 
 
-        flightPath.setMap(map);
+        //flightPath.setMap(map);
 
-        flightPath1.setMap(map);
+        //flightPath1.setMap(map);
 
     }
 

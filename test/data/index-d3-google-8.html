@@ -107,106 +107,37 @@
 <script>
 
     var parlamentares = [];
+
     function initMap(indexParlamentarSelected) {
 
-        var map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 3,
-            draggableCursor: 'url(http://powerhut.co.uk/googlemaps/marker-images/image.png), crosshair',
+        var map = new google.maps.Map(d3.select("#map").node(), {
+            zoom: 4,
+            //draggableCursor: 'url(http://powerhut.co.uk/googlemaps/marker-images/image.png), crosshair',
+            //draggableCursor: 'url(https://maps.google.com/mapfiles/kml/shapes/beachflag_maps.png), crosshair',
             center: new google.maps.LatLng(-14.2350, -51.9253)//{lat: -14.2350, lng: 51.9253}  // Australia.
         });
 
-        /*var directionsService = new google.maps.DirectionsService;
-        var directionsDisplay = new google.maps.DirectionsRenderer({
-            draggable: true,
-            map: map
-            //panel: document.getElementById('right-panel')
-        });
-
-        directionsDisplay.addListener('directions_changed', function () {
-            computeTotalDistance(directionsDisplay.getDirections());
-        });
-
-        displayRoute('Perth, WA', 'Sydney, NSW', directionsService,
-            directionsDisplay);
-
-
-        var flightPlanCoordinates = [
-            new google.maps.LatLng(37.772323, -122.214897),
-            new google.maps.LatLng(21.291982, -157.821856)
-        ];
-        var flightPath = new google.maps.Polyline({
-            path: flightPlanCoordinates,
-            strokeColor: "#FF0000",
-            strokeOpacity: 1.0,
-            strokeWeight: 2
-        });
-
-        var flightPlanCoordinates1 = [
-            new google.maps.LatLng(-18.142599, 178.431),
-            new google.maps.LatLng(-27.46758, 153.027892)
-        ];
-        var flightPath1 = new google.maps.Polyline({
-            path: flightPlanCoordinates1,
-            strokeColor: "#347bff",
-            strokeOpacity: 1.0,
-            strokeWeight: 2
-        });
-
-        google.maps.event.addListener(flightPath, "mouseover", function () {
-            console.log('mouse over path');
-            var flightPath = new google.maps.Polyline({
-                path: flightPlanCoordinates,
-                strokeColor: "#FFFF00",
-                strokeOpacity: 1.0,
-                strokeWeight: 2
-            });
-            flightPath.setMap(map);
-        });
-
-        google.maps.event.addListener(flightPath, "mouseout", function () {
-            console.log('mouse out path');
-            var flightPath = new google.maps.Polyline({
-                path: flightPlanCoordinates,
-                strokeColor: "#FF0000",
-                strokeOpacity: 1.0,
-                strokeWeight: 2
-            });
-            flightPath.setMap(map);
-        });
-
-        var image = 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png';
-        var beachMarker = new google.maps.Marker({
-            position: {lat: -33.890, lng: 151.274},
-            map: map,
-            icon: image
-        });
-
-        map.addListener('click', function (e) {
-            placeMarker(e.latLng, map);
-        });
-*/
         d3.queue()
-            .defer(d3.json, "us-10m.json")
             .defer(d3.csv, "world-airport-codes.csv", typeAirport)
             .defer(d3.csv, "Ano-2017-parsed.csv", typeFlight)
             .await(ready);
 
 
-        function ready(error, us, airports, flights) {
+        function ready(error, airports, flights) {
             if (error) throw error;
 
             var airportByIata = d3.map(airports, function (d) {
                 return d.iata_code;
             });
 
-            if(parlamentares == null){
+            if (parlamentares == null) {
 
                 parlamentares = [];
             }
 
             // check which airports really have flights from our dataset
             flights.forEach(function (flight) {
-                if(indexParlamentarSelected != null && flight.name == parlamentares[indexParlamentarSelected]){
+                if (indexParlamentarSelected != null && flight.name == parlamentares[indexParlamentarSelected]) {
                     var source = airportByIata.get(flight.origin),
                         target = airportByIata.get(flight.destination);
                     if (source != null && target != null) {
@@ -214,8 +145,8 @@
                         target.arcs.coordinates.push([target, source]);
 
 
-                        console.log('orig: ' + flight.origin + ' - dest: ' + flight.destination);
-                        console.log('source: ' , source[0] + ' - target: ' , target);
+                        console.log(flight.count);
+                        //console.log('source: ' , source[0] + ' - target: ' , target);
                         // try with source and target
                         var flightPlanCoordinates3 = [
                             new google.maps.LatLng(source.latitude_deg, source.longitude_deg),
@@ -225,7 +156,7 @@
                             path: flightPlanCoordinates3,
                             strokeColor: "#008eff",
                             strokeOpacity: 1.0,
-                            strokeWeight: 2
+                            strokeWeight: flight.count
                         });
 
                         flightPath3.setMap(map);
@@ -237,8 +168,6 @@
                 }
 
             });
-
-            //console.log(parlamentares[indexParlamentarSelected]);
 
             airports = airports
                 .filter(function (d) {
@@ -281,7 +210,13 @@
                     marker.append("circle")
                         .attr("r", 4.5)
                         .attr("cx", padding)
-                        .attr("cy", padding);
+                        .attr("cy", padding)
+                        .on("mouseover", mouseover);
+
+                    function mouseover() {
+                        console.log('mouse over');
+                        div.style("display", "inline");
+                    }
 
                     // Add a label.
                     marker.append("text")
@@ -289,12 +224,14 @@
                         .attr("y", padding)
                         .attr("dy", ".31em")
                         .text(function (d) {
-                            return d.iata;
+                            console.log(d);
+                            return d.value.name;
                         });
 
                     function transform(d) {
                         d = new google.maps.LatLng(d.value[1], d.value[0]);
                         d = projection.fromLatLngToDivPixel(d);
+                        //console.log(this);
                         return d3.select(this)
                             .style("left", (d.x - padding) + "px")
                             .style("top", (d.y - padding) + "px");
@@ -306,11 +243,6 @@
             overlay.setMap(map);
             // end of airport points
         }
-
-
-        //flightPath.setMap(map);
-
-        //flightPath1.setMap(map);
 
     }
 
@@ -347,28 +279,6 @@
         });
     }
 
-    function displayRoute(origin, destination, service, display) {
-        service.route({
-            origin: origin,
-            destination: destination,
-            waypoints: [{location: 'Melbourne, NSW'}, {location: 'Broken Hill, NSW'}],
-            travelMode: 'DRIVING',
-            avoidTolls: true
-        }, function (response, status) {
-            if (status === 'OK') {
-                display.setDirections(response);
-            } else {
-                alert('Could not display directions due to: ' + status);
-            }
-        }, function (response, status) {
-            if (status === 'OK') {
-                display.setDirections(response);
-            } else {
-                alert('Could not display directions due to: ' + status);
-            }
-        });
-    }
-
     function typeAirport(d) {
         d[0] = +d.longitude_deg;
         d[1] = +d.latitude_deg;
@@ -379,16 +289,6 @@
     function typeFlight(d) {
         d.count = +d.count;
         return d;
-    }
-
-    function computeTotalDistance(result) {
-        var total = 0;
-        var myroute = result.routes[0];
-        for (var i = 0; i < myroute.legs.length; i++) {
-            total += myroute.legs[i].distance.value;
-        }
-        total = total / 1000;
-        document.getElementById('total').innerHTML = total + ' km';
     }
 </script>
 <script async defer

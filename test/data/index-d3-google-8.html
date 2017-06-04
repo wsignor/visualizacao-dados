@@ -5,6 +5,10 @@
 <script src="https://d3js.org/topojson.v1.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
+<!--<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>-->
+<!--<script type="text/javascript" src="http://square.github.io/crossfilter/d3.v3.min.js"></script>-->
+<!--<script type="text/javascript" src="http://code.jquery.com/jquery-1.8.3.min.js"></script>-->
+
 <head>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
@@ -87,6 +91,13 @@
             stroke-width: 1.5px;
         }
 
+        .stations circle:hover {
+            fill: blue;
+            cursor: pointer; }
+
+        .marker_text {
+            fill: black;
+            visibility: hidden; }
 
     </style>
 </head>
@@ -200,7 +211,7 @@
 
             // Add the container when the overlay is added to the map.
             overlay.onAdd = function () {
-                var layer = d3.select(this.getPanes().overlayLayer).append("div")
+                var layer = d3.select(this.getPanes().overlayMouseTarget).append("div")
                     .attr("class", "airports");
 
                 // Draw each marker as a separate SVG element.
@@ -221,16 +232,29 @@
 
                     // Add a circle.
                     //console.log(flight);
-                    marker.append("circle")
+                    marker.append("svg:circle")
                         .attr("r", 4.5)
                         .attr("cx", padding)
                         .attr("cy", padding)
-                        .on("mouseover", mouseover);
+                        .on("click",expandNode)
+                        .on("dblclick",contractNode)
+                        .on("mouseover",function(d){
+                            console.log(d.value.iata_code);
+                        });
 
-                    function mouseover() {
-                        console.log('mouse over');
-                        div.style("display", "inline");
-                    }
+                    // provides node animation for mouseover
+                    function expandNode() {
+                        d3.select(this).transition()
+                            .duration(100)
+                            .attr("r",7)
+                    };
+
+                    // provides node animation for mouseout
+                    function contractNode(){
+                        d3.select(this).transition()
+                            .duration(100)
+                            .attr("r",4.5)
+                    };
 
                     // Add a label.
                     marker.append("text")

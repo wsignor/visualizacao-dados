@@ -3,6 +3,8 @@
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/topojson.v1.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
 <head>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
@@ -100,11 +102,22 @@
     <span id="range">2014</span>
     <script type="text/javascript">
         function showValue(newValue) {
+            //console.log(newValue);
             document.getElementById("range").innerHTML = newValue;
         }
     </script>
 </div>
+
 <script>
+
+    /*$(document).ready(function(){
+        $("#right-panel").hover(function(){
+                alert("You entered p1!");
+            },
+            function(){
+                alert("Bye! You now leave p1!");
+            });
+    });*/
 
     var parlamentares = [];
 
@@ -145,7 +158,7 @@
                         target.arcs.coordinates.push([target, source]);
 
 
-                        console.log(flight.count);
+                        //console.log(flight.count);
                         //console.log('source: ' , source[0] + ' - target: ' , target);
                         // try with source and target
                         var flightPlanCoordinates3 = [
@@ -156,7 +169,7 @@
                             path: flightPlanCoordinates3,
                             strokeColor: "#008eff",
                             strokeOpacity: 1.0,
-                            strokeWeight: flight.count
+                            strokeWeight: flight.count > 5 ? 5 : flight.count
                         });
 
                         flightPath3.setMap(map);
@@ -207,6 +220,7 @@
                         .attr("class", "marker");
 
                     // Add a circle.
+                    //console.log(flight);
                     marker.append("circle")
                         .attr("r", 4.5)
                         .attr("cx", padding)
@@ -224,7 +238,7 @@
                         .attr("y", padding)
                         .attr("dy", ".31em")
                         .text(function (d) {
-                            console.log(d);
+                            //console.log(d);
                             return d.value.name;
                         });
 

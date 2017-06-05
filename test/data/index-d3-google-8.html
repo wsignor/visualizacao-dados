@@ -131,6 +131,10 @@
     });*/
 
     var parlamentares = [];
+    var allFlightPaths = [];
+    var airportsCount = [];
+
+    var flightPathsBeingDisplayed = [];
 
     function initMap(indexParlamentarSelected) {
 
@@ -159,32 +163,27 @@
                 parlamentares = [];
             }
 
+            allFlightPaths = [];
+            airportsCount = [];
+
             // check which airports really have flights from our dataset
             flights.forEach(function (flight) {
                 if (indexParlamentarSelected != null && flight.name == parlamentares[indexParlamentarSelected]) {
                     var source = airportByIata.get(flight.origin),
                         target = airportByIata.get(flight.destination);
+
                     if (source != null && target != null) {
                         source.arcs.coordinates.push([source, target]);
                         target.arcs.coordinates.push([target, source]);
 
-
-                        //console.log(flight.count);
-                        //console.log('source: ' , source[0] + ' - target: ' , target);
-                        // try with source and target
-                        var flightPlanCoordinates3 = [
+                        allFlightPaths[allFlightPaths.length] = [
                             new google.maps.LatLng(source.latitude_deg, source.longitude_deg),
                             new google.maps.LatLng(target.latitude_deg, target.longitude_deg)
                         ];
-                        var flightPath3 = new google.maps.Polyline({
-                            path: flightPlanCoordinates3,
-                            strokeColor: "#008eff",
-                            strokeOpacity: 1.0,
-                            strokeWeight: flight.count > 5 ? 5 : flight.count
-                        });
 
-                        flightPath3.setMap(map);
-
+                        airportsCount[airportsCount.length] = [
+                            flight
+                        ];
                     }
                 }
                 if (!contains.call(parlamentares, flight.name)) {
@@ -198,8 +197,6 @@
                     return d.arcs.coordinates.length;
                 });
 
-            // adding parlamentares names to list
-            // TODO ensure names are not repeated
             var select = document.getElementById("parlamentares-select");
             for (index in parlamentares) {
                 select.options[select.options.length] = new Option(parlamentares[index], index);
@@ -233,13 +230,18 @@
                     // Add a circle.
                     //console.log(flight);
                     marker.append("svg:circle")
+                        //.attr("r", function(d){adoptCircleSize(d)})
                         .attr("r", 4.5)
                         .attr("cx", padding)
                         .attr("cy", padding)
                         .on("click",expandNode)
                         .on("dblclick",contractNode)
                         .on("mouseover",function(d){
-                            console.log(d.value.iata_code);
+                            displayRouteOnMouseOver(d)
+                        })
+                        //.on("mouseover",expandNode)
+                        .on("mouseout",function(d){
+                            hideRouteOnMouseOur(d)
                         });
 
                     // provides node animation for mouseover
@@ -256,20 +258,56 @@
                             .attr("r",4.5)
                     };
 
+                    function onLoadCircle(){
+                        //console.log("called during onload");
+                    }
+
+                    function adoptCircleSize(d){
+                        for(var i = 0 ; i < airportsCount.length ; i++){
+                            //console.log(airportsCount[i][0]);
+                            if(airportsCount[i][0].origin == d.value.iata_code){
+                                return airportsCount[i][0].count;
+                            }
+                        }
+
+                    };
+
+                    function displayRouteOnMouseOver(d) {
+                        console.info(this);
+                        flightPathsBeingDisplayed = [];
+
+                        for (var i = 0 ; i < allFlightPaths.length ; i++){
+                            if(airportsCount[i][0].origin == d.value.iata_code){
+                                var flightPaths1 = new google.maps.Polyline({
+                                    path: allFlightPaths[i],
+                                    strokeColor: "#008eff",
+                                    strokeOpacity: 1.0,
+                                    strokeWeight: 2
+                                });
+                                flightPaths1.setMap(map);
+                                flightPathsBeingDisplayed.push(flightPaths1);
+                            }
+                        }
+                    };
+
+                    function hideRouteOnMouseOur(d) {
+                        for(var i = 0 ; i < flightPathsBeingDisplayed.length ; i++){
+                            flightPathsBeingDisplayed[i].setMap(null);
+                        }
+                    };
+
                     // Add a label.
                     marker.append("text")
                         .attr("x", padding + 7)
                         .attr("y", padding)
                         .attr("dy", ".31em")
                         .text(function (d) {
-                            //console.log(d);
                             return d.value.name;
                         });
 
                     function transform(d) {
                         d = new google.maps.LatLng(d.value[1], d.value[0]);
                         d = projection.fromLatLngToDivPixel(d);
-                        //console.log(this);
                         return d3.select(this)
                             .style("left", (d.x - padding) + "px")
                             .style("top", (d.y - padding) + "px");

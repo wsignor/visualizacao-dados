@@ -97,38 +97,49 @@
 
         .marker_text {
             fill: black;
-            visibility: hidden; }
+            visibility: hidden;
+        }
+
+        .chart div {
+            font: 10px sans-serif;
+            background-color: steelblue;
+            text-align: right;
+            padding: 3px;
+            margin: 1px;
+            color: white;
+        }
 
     </style>
 </head>
 <body>
 <div id="map"></div>
 <div id="right-panel">
-    <p>Total Distance: <span id="total"></span></p>
 
     <select id="parlamentares-select" onchange="initMap(this.value)">
     </select>
 
-    <input type="range" min="2014" max="2017" value="2014" step="1" onchange="showValue(this)"/>
-    <span id="range">2014</span>
+    <label for="fader">Ano de </label>
+    <span id="range">2017</span>
+    <input type="range" min="2014" max="2017" value="2017" id="fader" step="1" list="volsettings" onchange="showValue(this),initMap(null, this.value)">
+    <datalist id="volsettings">
+        <option>2014</option>
+        <option>2015</option>
+        <option>2016</option>
+        <option>2017</option>
+    </datalist>
+
     <script type="text/javascript">
         function showValue(newValue) {
-            //console.log(newValue);
-            document.getElementById("range").innerHTML = newValue;
+            console.log(newValue.value);
+            document.getElementById("range").innerHTML = newValue.value;
         }
     </script>
+
+    <div class="chart"></div>
+
 </div>
 
 <script>
-
-    /*$(document).ready(function(){
-        $("#right-panel").hover(function(){
-                alert("You entered p1!");
-            },
-            function(){
-                alert("Bye! You now leave p1!");
-            });
-    });*/
 
     var parlamentares = [];
     var allFlightPaths = [];
@@ -136,8 +147,9 @@
 
     var flightPathsBeingDisplayed = [];
 
-    function initMap(indexParlamentarSelected) {
+    function initMap(indexParlamentarSelected, selectedYear) {
 
+        //console.log(selectedYear);
         var map = new google.maps.Map(d3.select("#map").node(), {
             zoom: 4,
             //draggableCursor: 'url(http://powerhut.co.uk/googlemaps/marker-images/image.png), crosshair',
@@ -145,9 +157,89 @@
             center: new google.maps.LatLng(-14.2350, -51.9253)//{lat: -14.2350, lng: 51.9253}  // Australia.
         });
 
+        if(selectedYear==null){
+            selectedYear=2017;
+        }
+
+        // bar chart
+        var data = [4, 8, 15, 16, 23, 42];
+
+        var ranking2014 = [{nome: "SERGIO ZVEITER", grana: 285591},
+            {nome: "MARCO MAIA", grana: 296654},
+            {nome: "WALDIR MARANHÃO", grana: 320661},
+            {nome: "FELIPE BORNIER", grana: 321723},
+            {nome: "BRUNO ARAÚJO", grana: 361510},
+            {nome: "EDUARDO CUNHA", grana: 391532},
+            {nome: "BONIFÁCIO DE ANDRADA", grana: 454067}];
+
+        var ranking2015 = [{nome: "BONIFÁCIO DE ANDRADA", grana: 355168},
+            {nome: "WALDIR MARANHÃO", grana: 360403},
+            {nome: "PAULO PEREIRA DA SILVA", grana: 387417},
+            {nome: "MIRO TEIXEIRA", grana: 474814},
+            {nome: "WALDIR MARANHÃO", grana: 504166},
+            {nome: "FELIPE BORNIER", grana: 509297},
+            {nome: "LEONARDO PICCIANI", grana: 641324}];
+
+        var ranking2016 = [{nome: "JULIO LOPES", grana: 343246},
+            {nome: "WALDIR MARANHÃO", grana: 351438},
+            {nome: "MÁRIO HERINGER", grana: 366932},
+            {nome: "MIRO TEIXEIRA", grana: 368683},
+            {nome: "MARINALDO ROSENDO", grana: 379935},
+            {nome: "SORAYA SANTOS", grana: 413228},
+            {nome: "FELIPE BORNIER", grana: 519504}];
+
+        var ranking2017 = [{nome: "IVAN VALENTE", grana: 55587},
+            {nome: "ARTHUR LIRA", grana: 60294},
+            {nome: "FELIPE BORNIER", grana: 63757},
+            {nome: "SORAYA SANTOS", grana: 69374},
+            {nome: "MARINALDO ROSENDO", grana: 76100},
+            {nome: "JULIO LOPES", grana: 78615},
+            {nome: "WALDIR MARANHÃO", grana: 113755}];
+
+        var dataSelect = null;
+
+        var listYears = [{ano: "2014", source: ranking2014},
+            {ano: "2015", source: ranking2015},
+            {ano: "2016", source: ranking2016},
+            {ano: "2017", source: ranking2017}]
+
+        if(selectedYear == null){
+            console.log("year null");
+            dataSelect = ranking2017;
+        } else {
+            console.log("selectedYear: " + selectedYear);
+
+            for(index in listYears){
+                console.log(listYears[index].ano);
+                if(listYears[index].ano == selectedYear){
+                    dataSelect = listYears[index].source;
+                }
+            }
+        }
+        console.log("dataSelect: " + dataSelect);
+
+        var x = d3.scaleLinear()
+            .domain([0, d3.max(dataSelect)])
+            .range([0, 420]);
+
+        d3.select(".chart")
+            .selectAll("div")
+            .data(dataSelect)
+            .enter().append("div")
+            .style("width", function(d) {
+                //console.log("width: " , d.grana);
+                return x(d.grana) + "px";
+            })
+            .text(function(d) {
+                //console.log("text: " , d.nome);
+                return d.nome + " - R$" + d.grana
+            });
+
+
+
         d3.queue()
             .defer(d3.csv, "world-airport-codes.csv", typeAirport)
-            .defer(d3.csv, "Ano-2017-parsed.csv", typeFlight)
+            .defer(d3.csv, "Ano-"+selectedYear+"-parsed.csv", typeFlight)
             .await(ready);
 
 
@@ -225,7 +317,22 @@
                         .each(transform) // update existing markers
                         .enter().append("svg")
                         .each(transform)
-                        .attr("class", "marker");
+                        .attr("class", "marker")
+                        .on("mouseover",expandOnMouseOver)
+                        .on("mouseout",contractOnMouseOut);
+
+                    function expandOnMouseOver (){
+                        d3.select(this).selectAll("circle").transition()
+                            .duration(50)
+                            .attr("r",9)
+                    }
+
+                    function contractOnMouseOut (){
+                        d3.select(this).selectAll("circle").transition()
+                            .duration(100)
+                            .attr("r",4.5)
+
+                    }
 
                     // Add a circle.
                     //console.log(flight);
@@ -276,13 +383,34 @@
                         console.info(this);
                         flightPathsBeingDisplayed = [];
 
+                        var colors = ["#f5ff00",
+                            "#d8d60f",
+                            "#D66E52",
+                            "#FF4420",
+                            "#481713"];
+
                         for (var i = 0 ; i < allFlightPaths.length ; i++){
                             if(airportsCount[i][0].origin == d.value.iata_code){
+
+                                var countColor = "#C4C758";
+
+                                if(airportsCount[i][0].count == 1){
+                                    countColor = colors[0];
+                                } else if (airportsCount[i][0].count > 1 && airportsCount[i][0].count <=4){
+                                    countColor = colors[1];
+                                } else if (airportsCount[i][0].count > 5 && airportsCount[i][0].count <=7){
+                                    countColor = colors[2];
+                                } else if (airportsCount[i][0].count > 7 && airportsCount[i][0].count <=10){
+                                    countColor = colors[3];
+                                } else if (airportsCount[i][0].count > 10){
+                                    countColor = colors[4];
+                                }
+
                                 var flightPaths1 = new google.maps.Polyline({
                                     path: allFlightPaths[i],
-                                    strokeColor: "#008eff",
-                                    strokeOpacity: 1.0,
-                                    strokeWeight: 2
+                                    strokeColor: countColor,
+                                    strokeOpacity: 4,
+                                    strokeWeight: 4
                                 });
                                 flightPaths1.setMap(map);
                                 flightPathsBeingDisplayed.push(flightPaths1);
@@ -302,7 +430,7 @@
                         .attr("y", padding)
                         .attr("dy", ".31em")
                         .text(function (d) {
-                            return d.value.name;
+                            return d.value.iata_code;
                         });
 
                     function transform(d) {

@@ -130,7 +130,7 @@
 
     <script type="text/javascript">
         function showValue(newValue) {
-            console.log(newValue.value);
+            //console.log(newValue.value);
             document.getElementById("range").innerHTML = newValue.value;
         }
     </script>
@@ -204,19 +204,19 @@
             {ano: "2017", source: ranking2017}]
 
         if(selectedYear == null){
-            console.log("year null");
+            //console.log("year null");
             dataSelect = ranking2017;
         } else {
-            console.log("selectedYear: " + selectedYear);
+            //console.log("selectedYear: " + selectedYear);
 
             for(index in listYears){
-                console.log(listYears[index].ano);
+                //console.log(listYears[index].ano);
                 if(listYears[index].ano == selectedYear){
                     dataSelect = listYears[index].source;
                 }
             }
         }
-        console.log("dataSelect: " + dataSelect);
+        //console.log("dataSelect: " + dataSelect);
 
         var x = d3.scaleLinear()
             .domain([0, d3.max(dataSelect)])
@@ -228,7 +228,7 @@
             .enter().append("div")
             .style("width", function(d) {
                 //console.log("width: " , d.grana);
-                return x(d.grana) + "px";
+                return d.grana/300 + "px";
             })
             .text(function(d) {
                 //console.log("text: " , d.nome);

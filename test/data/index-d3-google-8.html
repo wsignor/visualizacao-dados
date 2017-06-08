@@ -130,7 +130,6 @@
 
     <script type="text/javascript">
         function showValue(newValue) {
-            //console.log(newValue.value);
             document.getElementById("range").innerHTML = newValue.value;
         }
     </script>
@@ -149,7 +148,6 @@
 
     function initMap(indexParlamentarSelected, selectedYear) {
 
-        //console.log(selectedYear);
         var map = new google.maps.Map(d3.select("#map").node(), {
             zoom: 4,
             //draggableCursor: 'url(http://powerhut.co.uk/googlemaps/marker-images/image.png), crosshair',
@@ -204,19 +202,15 @@
             {ano: "2017", source: ranking2017}]
 
         if(selectedYear == null){
-            //console.log("year null");
             dataSelect = ranking2017;
         } else {
-            //console.log("selectedYear: " + selectedYear);
 
             for(index in listYears){
-                //console.log(listYears[index].ano);
                 if(listYears[index].ano == selectedYear){
                     dataSelect = listYears[index].source;
                 }
             }
         }
-        //console.log("dataSelect: " + dataSelect);
 
         var x = d3.scaleLinear()
             .domain([0, d3.max(dataSelect)])
@@ -227,11 +221,9 @@
             .data(dataSelect)
             .enter().append("div")
             .style("width", function(d) {
-                //console.log("width: " , d.grana);
                 return d.grana/300 + "px";
             })
             .text(function(d) {
-                //console.log("text: " , d.nome);
                 return d.nome + " - R$" + d.grana
             });
 
@@ -266,7 +258,7 @@
 
                     if (source != null && target != null) {
                         source.arcs.coordinates.push([source, target]);
-                        target.arcs.coordinates.push([target, source]);
+                        //target.arcs.coordinates.push([target, source]);
 
                         allFlightPaths[allFlightPaths.length] = [
                             new google.maps.LatLng(source.latitude_deg, source.longitude_deg),
@@ -283,6 +275,7 @@
                 }
 
             });
+
 
             airports = airports
                 .filter(function (d) {
@@ -310,8 +303,6 @@
                         padding = 10;
 
 
-                    //console.log('this: ' , this);
-
                     var marker = layer.selectAll("svg")
                         .data(d3.entries(airports))
                         .each(transform) // update existing markers
@@ -335,21 +326,22 @@
                     }
 
                     // Add a circle.
-                    //console.log(flight);
                     marker.append("svg:circle")
                         //.attr("r", function(d){adoptCircleSize(d)})
                         .attr("r", 4.5)
                         .attr("cx", padding)
                         .attr("cy", padding)
-                        .on("click",expandNode)
-                        .on("dblclick",contractNode)
-                        .on("mouseover",function(d){
+                        /*.on("dblclick",function(d){
+                            hideRouteOnMouseOur(d)
+                        })*/
+                        //.on("dblclick",contractNode)
+                        .on("click",function(d){
                             displayRouteOnMouseOver(d)
                         })
                         //.on("mouseover",expandNode)
-                        .on("mouseout",function(d){
+                        /*.on("mouseout",function(d){
                             hideRouteOnMouseOur(d)
-                        });
+                        })*/;
 
                     // provides node animation for mouseover
                     function expandNode() {
@@ -380,41 +372,74 @@
                     };
 
                     function displayRouteOnMouseOver(d) {
-                        console.info(this);
-                        flightPathsBeingDisplayed = [];
 
-                        var colors = ["#f5ff00",
-                            "#d8d60f",
-                            "#D66E52",
-                            "#FF4420",
-                            "#481713"];
+                        if(flightPathsBeingDisplayed.length == 0) {
+                            //flightPathsBeingDisplayed = [];
 
-                        for (var i = 0 ; i < allFlightPaths.length ; i++){
-                            if(airportsCount[i][0].origin == d.value.iata_code){
+                            var colors = ["#f5ff00",
+                                "#d8d60f",
+                                "#D66E52",
+                                "#FF4420",
+                                "#481713"];
 
-                                var countColor = "#C4C758";
+                            for (var i = 0; i < allFlightPaths.length; i++) {
+                                if (airportsCount[i][0].origin == d.value.iata_code) {
 
-                                if(airportsCount[i][0].count == 1){
-                                    countColor = colors[0];
-                                } else if (airportsCount[i][0].count > 1 && airportsCount[i][0].count <=4){
-                                    countColor = colors[1];
-                                } else if (airportsCount[i][0].count > 5 && airportsCount[i][0].count <=7){
-                                    countColor = colors[2];
-                                } else if (airportsCount[i][0].count > 7 && airportsCount[i][0].count <=10){
-                                    countColor = colors[3];
-                                } else if (airportsCount[i][0].count > 10){
-                                    countColor = colors[4];
+                                    var countColor = "#C4C758";
+
+                                    if (airportsCount[i][0].count == 1) {
+                                        countColor = colors[0];
+                                    } else if (airportsCount[i][0].count > 1 && airportsCount[i][0].count <= 4) {
+                                        countColor = colors[1];
+                                    } else if (airportsCount[i][0].count > 5 && airportsCount[i][0].count <= 7) {
+                                        countColor = colors[2];
+                                    } else if (airportsCount[i][0].count > 7 && airportsCount[i][0].count <= 10) {
+                                        countColor = colors[3];
+                                    } else if (airportsCount[i][0].count > 10) {
+                                        countColor = colors[4];
+                                    }
+
+                                    var flightPaths1 = new google.maps.Polyline({
+                                        //path: allFlightPaths[i],
+                                        strokeColor: countColor,
+                                        strokeOpacity: 2,
+                                        strokeWeight: 6,
+                                        geodesic: true,
+                                        map: map
+                                    });
+
+                                    //flightPaths1.setMap(map);
+                                    flightPaths1.setPath(allFlightPaths[i]);
+                                    flightPathsBeingDisplayed.push(flightPaths1);
+
+
+                                    function attachPolygonInfoWindow(polygon, html, path) {
+
+                                        polygon.infoWindow = new google.maps.InfoWindow({
+                                            content: html,
+                                        });
+                                        google.maps.event.addListener(polygon, 'mouseover', function (e) {
+                                            var latLng = path[1];
+                                            this.setOptions({fillOpacity: 0.1});
+                                            polygon.infoWindow.setPosition(latLng);
+                                            polygon.infoWindow.open(map);
+                                        });
+                                        google.maps.event.addListener(polygon, 'mouseout', function () {
+                                            this.setOptions({fillOpacity: 0.35});
+                                            polygon.infoWindow.close();
+                                        });
+                                    }
+
+                                    attachPolygonInfoWindow(flightPaths1, "<strong>" + airportsCount[i][0].count + "</strong>", allFlightPaths[i]);
+
+
                                 }
-
-                                var flightPaths1 = new google.maps.Polyline({
-                                    path: allFlightPaths[i],
-                                    strokeColor: countColor,
-                                    strokeOpacity: 4,
-                                    strokeWeight: 4
-                                });
-                                flightPaths1.setMap(map);
-                                flightPathsBeingDisplayed.push(flightPaths1);
                             }
+                        }else {
+                            for(var i = 0 ; i < flightPathsBeingDisplayed.length ; i++){
+                                flightPathsBeingDisplayed[i].setMap(null);
+                            }
+                            flightPathsBeingDisplayed = [];
                         }
                     };
 
@@ -496,7 +521,8 @@
     }
 </script>
 <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHvjraZ_YQXZvFg8etDFaKUxp3EG1-DOs&callback=initMap">
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHvjraZ_YQXZvFg8etDFaKUxp3EG1-DOs&libraries=geometry&callback=initMap">
 </script>
+
 </body>
 </html>

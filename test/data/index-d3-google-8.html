@@ -93,7 +93,8 @@
 
         .stations circle:hover {
             fill: blue;
-            cursor: pointer; }
+            cursor: pointer;
+        }
 
         .marker_text {
             fill: black;
@@ -120,7 +121,8 @@
 
     <label for="fader">Ano de </label>
     <span id="range">2017</span>
-    <input type="range" min="2014" max="2017" value="2017" id="fader" step="1" list="volsettings" onchange="showValue(this),initMap(null, this.value)">
+    <input type="range" min="2014" max="2017" value="2017" id="fader" step="1" list="volsettings"
+           onchange="showValue(this),initMap(null, this.value)">
     <datalist id="volsettings">
         <option>2014</option>
         <option>2015</option>
@@ -146,6 +148,8 @@
 
     var flightPathsBeingDisplayed = [];
 
+    var lastYearSelected = "";
+
     function initMap(indexParlamentarSelected, selectedYear) {
 
         var map = new google.maps.Map(d3.select("#map").node(), {
@@ -155,44 +159,45 @@
             center: new google.maps.LatLng(-14.2350, -51.9253)//{lat: -14.2350, lng: 51.9253}  // Australia.
         });
 
-        if(selectedYear==null){
-            selectedYear=2017;
-        }
+        if (selectedYear == null) {
+            selectedYear = 2017;
+        } /*else if (selectedYear != lastYearSelected) {
+            parlamentares = [];
+            lastYearSelected = selectedYear;
+        }*/
 
-        // bar chart
-        var data = [4, 8, 15, 16, 23, 42];
 
-        var ranking2014 = [{nome: "SERGIO ZVEITER", grana: 285591},
-            {nome: "MARCO MAIA", grana: 296654},
-            {nome: "WALDIR MARANHÃO", grana: 320661},
-            {nome: "FELIPE BORNIER", grana: 321723},
-            {nome: "BRUNO ARAÚJO", grana: 361510},
-            {nome: "EDUARDO CUNHA", grana: 391532},
-            {nome: "BONIFÁCIO DE ANDRADA", grana: 454067}];
+        var ranking2014 = [{nome: "SERGIO ZVEITER - R$ 285591", grana: 285591},
+            {nome: "MARCO MAIA - R$ 296654", grana: 296654},
+            {nome: "WALDIR MARANHÃO - R$ 320661", grana: 320661},
+            {nome: "FELIPE BORNIER - R$ 321723", grana: 321723},
+            {nome: "BRUNO ARAÚJO - R$ 361510", grana: 361510},
+            {nome: "EDUARDO CUNHA - R$ 391532", grana: 391532},
+            {nome: "BONIFÁCIO DE ANDRADA - R$ 454067", grana: 454067}];
 
-        var ranking2015 = [{nome: "BONIFÁCIO DE ANDRADA", grana: 355168},
-            {nome: "WALDIR MARANHÃO", grana: 360403},
-            {nome: "PAULO PEREIRA DA SILVA", grana: 387417},
-            {nome: "MIRO TEIXEIRA", grana: 474814},
-            {nome: "WALDIR MARANHÃO", grana: 504166},
-            {nome: "FELIPE BORNIER", grana: 509297},
-            {nome: "LEONARDO PICCIANI", grana: 641324}];
+        var ranking2015 = [{nome: "BONIFÁCIO DE ANDRADA - R$ 355168", grana: 355168},
+            {nome: "WALDIR MARANHÃO - R$ 360403", grana: 360403},
+            {nome: "PAULO PEREIRA DA SILVA - R$ 387417", grana: 387417},
+            {nome: "MIRO TEIXEIRA - R$ 474814", grana: 474814},
+            {nome: "WALDIR MARANHÃO - R$ 504166", grana: 504166},
+            {nome: "FELIPE BORNIER - R$ 509297", grana: 509297},
+            {nome: "LEONARDO PICCIANI - R$ 641324", grana: 641324}];
 
-        var ranking2016 = [{nome: "JULIO LOPES", grana: 343246},
-            {nome: "WALDIR MARANHÃO", grana: 351438},
-            {nome: "MÁRIO HERINGER", grana: 366932},
-            {nome: "MIRO TEIXEIRA", grana: 368683},
-            {nome: "MARINALDO ROSENDO", grana: 379935},
-            {nome: "SORAYA SANTOS", grana: 413228},
-            {nome: "FELIPE BORNIER", grana: 519504}];
+        var ranking2016 = [{nome: "JULIO LOPES - R$ 343246", grana: 343246},
+            {nome: "WALDIR MARANHÃO - R$ 351438", grana: 351438},
+            {nome: "MÁRIO HERINGER - R$ 366932", grana: 366932},
+            {nome: "MIRO TEIXEIRA - R$ 368683", grana: 368683},
+            {nome: "MARINALDO ROSENDO - R$ 379935", grana: 379935},
+            {nome: "SORAYA SANTOS - R$ 413228", grana: 413228},
+            {nome: "FELIPE BORNIER - R$ 519504", grana: 519504}];
 
-        var ranking2017 = [{nome: "IVAN VALENTE", grana: 55587},
-            {nome: "ARTHUR LIRA", grana: 60294},
-            {nome: "FELIPE BORNIER", grana: 63757},
-            {nome: "SORAYA SANTOS", grana: 69374},
-            {nome: "MARINALDO ROSENDO", grana: 76100},
-            {nome: "JULIO LOPES", grana: 78615},
-            {nome: "WALDIR MARANHÃO", grana: 113755}];
+        var ranking2017 = [{nome: "IVAN VALENTE - R$ 55587", grana: 55587},
+            {nome: "ARTHUR LIRA - R$ 60294", grana: 60294},
+            {nome: "FELIPE BORNIER - R$ 63757", grana: 63757},
+            {nome: "SORAYA SANTOS - R$ 69374", grana: 69374},
+            {nome: "MARINALDO ROSENDO - R$ 76100", grana: 76100},
+            {nome: "JULIO LOPES - R$ 78615", grana: 78615},
+            {nome: "WALDIR MARANHÃO - R$ 113755", grana: 113755}];
 
         var dataSelect = null;
 
@@ -201,37 +206,40 @@
             {ano: "2016", source: ranking2016},
             {ano: "2017", source: ranking2017}]
 
-        if(selectedYear == null){
-            dataSelect = ranking2017;
-        } else {
-
-            for(index in listYears){
-                if(listYears[index].ano == selectedYear){
-                    dataSelect = listYears[index].source;
-                }
+        for (index in listYears) {
+            console.log(listYears[index].ano);
+            if (listYears[index].ano == selectedYear) {
+                console.log("selected: " + listYears[index].ano);
+                dataSelect = listYears[index].source;
             }
         }
+
+        d3.select(".chart").selectAll("div").remove();
 
         var x = d3.scaleLinear()
             .domain([0, d3.max(dataSelect)])
             .range([0, 420]);
 
+
         d3.select(".chart")
             .selectAll("div")
             .data(dataSelect)
             .enter().append("div")
-            .style("width", function(d) {
-                return d.grana/300 + "px";
+            .style("width", function (d) {
+                if (selectedYear == "2017") {
+                    return d.grana / 400 + "px";
+                } else {
+                    return d.grana / 1300 + "px";
+                }
             })
-            .text(function(d) {
-                return d.nome + " - R$" + d.grana
+            .text(function (d) {
+                return d.nome
             });
-
 
 
         d3.queue()
             .defer(d3.csv, "world-airport-codes.csv", typeAirport)
-            .defer(d3.csv, "Ano-"+selectedYear+"-parsed.csv", typeFlight)
+            .defer(d3.csv, "Ano-" + selectedYear + "-parsed.csv", typeFlight)
             .await(ready);
 
 
@@ -243,7 +251,6 @@
             });
 
             if (parlamentares == null) {
-
                 parlamentares = [];
             }
 
@@ -258,6 +265,7 @@
 
                     if (source != null && target != null) {
                         source.arcs.coordinates.push([source, target]);
+                        // show airports that are origin - do not include the ones that are only destination
                         //target.arcs.coordinates.push([target, source]);
 
                         allFlightPaths[allFlightPaths.length] = [
@@ -271,6 +279,8 @@
                     }
                 }
                 if (!contains.call(parlamentares, flight.name)) {
+                    //populate list with parlamentares
+                    //console.log(flight.name);
                     parlamentares[parlamentares.length] = flight.name;
                 }
 
@@ -283,6 +293,12 @@
                 });
 
             var select = document.getElementById("parlamentares-select");
+
+            var length = select.options.length;
+            for (i = 0; i < length; i++) {
+                select.options[i] = null;
+            }
+
             for (index in parlamentares) {
                 select.options[select.options.length] = new Option(parlamentares[index], index);
             }
@@ -309,62 +325,62 @@
                         .enter().append("svg")
                         .each(transform)
                         .attr("class", "marker")
-                        .on("mouseover",expandOnMouseOver)
-                        .on("mouseout",contractOnMouseOut);
+                        .on("mouseover", expandOnMouseOver)
+                        .on("mouseout", contractOnMouseOut);
 
-                    function expandOnMouseOver (){
+                    function expandOnMouseOver() {
                         d3.select(this).selectAll("circle").transition()
                             .duration(50)
-                            .attr("r",9)
+                            .attr("r", 9)
                     }
 
-                    function contractOnMouseOut (){
+                    function contractOnMouseOut() {
                         d3.select(this).selectAll("circle").transition()
                             .duration(100)
-                            .attr("r",4.5)
+                            .attr("r", 4.5)
 
                     }
 
                     // Add a circle.
                     marker.append("svg:circle")
-                        //.attr("r", function(d){adoptCircleSize(d)})
+                    //.attr("r", function(d){adoptCircleSize(d)})
                         .attr("r", 4.5)
                         .attr("cx", padding)
                         .attr("cy", padding)
                         /*.on("dblclick",function(d){
-                            hideRouteOnMouseOur(d)
-                        })*/
+                         hideRouteOnMouseOur(d)
+                         })*/
                         //.on("dblclick",contractNode)
-                        .on("click",function(d){
+                        .on("click", function (d) {
                             displayRouteOnMouseOver(d)
                         })
-                        //.on("mouseover",expandNode)
-                        /*.on("mouseout",function(d){
-                            hideRouteOnMouseOur(d)
-                        })*/;
+                    //.on("mouseover",expandNode)
+                    /*.on("mouseout",function(d){
+                     hideRouteOnMouseOur(d)
+                     })*/;
 
                     // provides node animation for mouseover
                     function expandNode() {
                         d3.select(this).transition()
                             .duration(100)
-                            .attr("r",7)
+                            .attr("r", 7)
                     };
 
                     // provides node animation for mouseout
-                    function contractNode(){
+                    function contractNode() {
                         d3.select(this).transition()
                             .duration(100)
-                            .attr("r",4.5)
+                            .attr("r", 4.5)
                     };
 
-                    function onLoadCircle(){
+                    function onLoadCircle() {
                         //console.log("called during onload");
                     }
 
-                    function adoptCircleSize(d){
-                        for(var i = 0 ; i < airportsCount.length ; i++){
+                    function adoptCircleSize(d) {
+                        for (var i = 0; i < airportsCount.length; i++) {
                             //console.log(airportsCount[i][0]);
-                            if(airportsCount[i][0].origin == d.value.iata_code){
+                            if (airportsCount[i][0].origin == d.value.iata_code) {
                                 return airportsCount[i][0].count;
                             }
                         }
@@ -373,7 +389,7 @@
 
                     function displayRouteOnMouseOver(d) {
 
-                        if(flightPathsBeingDisplayed.length == 0) {
+                        if (flightPathsBeingDisplayed.length == 0) {
                             //flightPathsBeingDisplayed = [];
 
                             var colors = ["#f5ff00",
@@ -431,12 +447,10 @@
                                     }
 
                                     attachPolygonInfoWindow(flightPaths1, "<strong>" + airportsCount[i][0].count + "</strong>", allFlightPaths[i]);
-
-
                                 }
                             }
-                        }else {
-                            for(var i = 0 ; i < flightPathsBeingDisplayed.length ; i++){
+                        } else {
+                            for (var i = 0; i < flightPathsBeingDisplayed.length; i++) {
                                 flightPathsBeingDisplayed[i].setMap(null);
                             }
                             flightPathsBeingDisplayed = [];
@@ -444,7 +458,7 @@
                     };
 
                     function hideRouteOnMouseOur(d) {
-                        for(var i = 0 ; i < flightPathsBeingDisplayed.length ; i++){
+                        for (var i = 0; i < flightPathsBeingDisplayed.length; i++) {
                             flightPathsBeingDisplayed[i].setMap(null);
                         }
                     };
